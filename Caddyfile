@@ -1,0 +1,17 @@
+# Global options
+{
+	email user@example.com
+}
+
+example.com {
+	reverse_proxy examplecom:80
+}
+
+spaceapi.example.com {
+	reverse_proxy spaceapi:8080
+}
+
+# Catch-all for invalid domains
+:80 {
+	respond "Service not found" 404
+}

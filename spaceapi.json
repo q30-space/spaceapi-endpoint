@@ -1,0 +1,54 @@
+{
+  "api_compatibility": ["15"],
+  "space": "q30.space",
+  "logo": "https://q30.space/images/sine_dark.png",
+  "url": "https://q30.space",
+  "location": {
+    "address": "Chemin de Saules 27, 2503 Biel/Bienne, Switzerland",
+    "lat": 47.133236189979776,
+    "lon": 7.239180762754296,
+    "timezone": "Europe/Zurich",
+    "country_code": "CH",
+    "hint": "Main entrance is the same of quaidubas30.ch."
+  },
+  "contact": {
+    "email": "contact@q30.space"
+  },
+  "issue_report_channels": ["email"],
+  "state": {
+    "icon": {
+      "open": "https://q30.space/images/q30space_sine_green.png",
+      "closed": "https://q30.space/images/q30space_sine_red.png"
+    },
+    "open": false,
+    "lastchange": 0,
+    "message": "Space status unknown"
+  },
+  "sensors": {
+    "people_now_present": [
+      {
+        "value": 0,
+        "location": "Main Space",
+        "name": "People Counter",
+        "description": "Number of people currently in the space"
+      }
+    ]
+  },
+  "feeds": {
+    "blog": {
+      "type": "rss",
+      "url": "https://q30.space/posts/index.xml"
+    }
+  },
+  "projects": [
+    "https://github.com/q30space"
+  ],
+  "linked_spaces": [
+    {
+      "website": "https://quaidubas30.ch/"
+    },
+    {
+      "website": "https://www.chaostreffbern.ch/"
+    }
+  ]
+}

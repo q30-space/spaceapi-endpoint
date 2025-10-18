@@ -1,0 +1,55 @@
+{
+  "api_compatibility": [
+    "15"
+  ],
+  "space": "example.com",
+  "logo": "https://example.com/images/logo.png",
+  "url": "https://example.com",
+  "location": {
+    "address": "Your address here",
+    "lat": 0.000000,
+    "lon": 0.000000,
+    "timezone": "Your timezone here",
+    "country_code": "Your country code here",
+    "hint": "The door code is 1234."
+  },
+  "contact": {
+    "email": "contact@example.com"
+  },
+  "issue_report_channels": [
+    "email"
+  ],
+  "state": {
+    "icon": {
+      "open": "https://example.com/images/logo_open.png",
+      "closed": "https://example.com/images/logo_closed.png"
+    },
+    "open": false,
+    "lastchange": 0,
+    "message": "Space status unknown"
+  },
+  "sensors": {
+    "people_now_present": [
+      {
+        "value": 0,
+        "location": "Main Space",
+        "name": "People Counter",
+        "description": "Number of people currently in the space"
+      }
+    ]
+  },
+  "feeds": {
+    "blog": {
+      "type": "rss",
+      "url": "https://example.com/posts/index.xml"
+    }
+  },
+  "projects": [
+    "https://github.com/example"
+  ],
+  "linked_spaces": [
+    {
+      "website": "https://q30.space/"
+    }
+  ]
+}

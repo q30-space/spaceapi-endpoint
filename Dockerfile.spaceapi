@@ -1,0 +1,34 @@
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+COPY spaceapi.json ./
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o spaceapi ./cmd/spaceapi
+
+# Final stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the binary and config
+COPY --from=builder /app/spaceapi .
+COPY --from=builder /app/spaceapi.json .
+
+# Expose port
+EXPOSE 8080
+
+# Run the binary
+CMD ["./spaceapi"]

@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  caddy:
+    image: caddy:latest
+    restart: always
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_www:/var/www/html
+    networks:
+      - caddy_network
+
+  spaceapi:
+    container_name: spaceapi
+    build:
+      context: ./spaceapi
+      dockerfile: Dockerfile.spaceapi
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./spaceapi/spaceapi.json:/root/spaceapi.json:ro
+    environment:
+      - PORT=8080
+      - SPACEAPI_AUTH_KEY=${SPACEAPI_AUTH_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - caddy_network
+
+volumes:
+  caddy_data:
+  caddy_config:
+  caddy_www:
+    external: true
+networks:
+  caddy_network:
+    external: true
