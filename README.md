@@ -342,7 +342,134 @@ go run ./cmd/spaceapi
 
 ## Deployment
 
-### Docker Development
+### Production - Docker Image (Recommended) 🐳
+
+The easiest way to deploy is using the pre-built Docker image from GitHub Container Registry.
+
+📖 **For a complete guide, see the [Deployment Guide](doc/DEPLOYMENT_GUIDE.md).**
+
+> **⚠️ First-Time Setup**: The Docker image needs to be built by CI first. If you get "unauthorized" or "not found" errors:
+> 1. Push to GitHub (main/develop/dockerimage branch)
+> 2. Wait for CI to complete
+> 3. Make the package public (GitHub repo → Packages → Package settings → Change visibility)
+> 4. OR build locally: `docker build -f Dockerfile.spaceapi -t spaceapi:local .`
+
+#### Quick Start
+
+1. **Create your `spaceapi.json` configuration file** (use `spaceapi.json.example` as template):
+   ```bash
+   curl -O https://raw.githubusercontent.com/q30-space/spaceapi-endpoint/main/spaceapi.json.example
+   mv spaceapi.json.example spaceapi.json
+   # Edit spaceapi.json with your space details
+   ```
+
+2. **Create `.env` file with your API key**:
+   ```bash
+   echo "SPACEAPI_AUTH_KEY=$(openssl rand -hex 32)" > .env
+   ```
+
+3. **Run the container**:
+   ```bash
+   docker run -d \
+     --name spaceapi \
+     -p 8080:8080 \
+     -v $(pwd)/spaceapi.json:/app/spaceapi.json:ro \
+     --env-file .env \
+     --restart unless-stopped \
+     ghcr.io/q30-space/spaceapi-endpoint:latest
+   ```
+
+4. **Test the deployment**:
+   ```bash
+   curl http://localhost:8080/api/space
+   curl http://localhost:8080/health
+   ```
+
+#### Docker Compose Setup
+
+The repository includes a production-ready docker-compose configuration (`docker-compose.prod.yml`):
+
+```bash
+# Use the provided production compose file
+docker-compose -f docker-compose.prod.yml up -d
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Stop the service
+docker-compose -f docker-compose.prod.yml down
+```
+
+Or create your own `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  spaceapi:
+    image: ghcr.io/q30-space/spaceapi-endpoint:latest
+    container_name: spaceapi
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./spaceapi.json:/app/spaceapi.json:ro
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+```
+
+Then run:
+```bash
+docker-compose up -d
+```
+
+#### Available Image Tags
+
+- `latest` - Latest stable release from main branch
+- `main` - Latest commit from main branch
+- `develop` - Latest commit from develop branch
+- `v1.0.0` - Specific version tags (when available)
+- `main-<sha>` - Specific commit SHA
+
+#### Multi-Architecture Support
+
+The Docker images support both `amd64` and `arm64` architectures, so you can run them on:
+- x86_64 / AMD64 servers
+- ARM64 servers (including Raspberry Pi 4/5, AWS Graviton, etc.)
+
+#### Behind a Reverse Proxy (Caddy/Nginx)
+
+Example Caddy configuration:
+```caddyfile
+your-domain.com {
+    reverse_proxy localhost:8080
+    encode gzip
+}
+```
+
+Example Nginx configuration:
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+### Alternative Deployment Methods
+
+#### Docker Development
 ```bash
 # Start the service
 make docker-compose-up
@@ -356,26 +483,23 @@ docker-compose ps
 docker-compose logs -f spaceapi
 ```
 
-### Production - From sources
+#### Production - From sources
 1. Update `spaceapi.json` with your space details
 2. Build binaries: `make build`
 3. Deploy the `bin/spaceapi` binary
 4. Optionally deploy `bin/spaceicon` for monitoring
 
-### Production - Docker from source
+#### Production - Docker from source
 1. Update `spaceapi.json` with your space details
 2. Build binaries: `make build`
 3. Start the container: `make docker-compose-up` (or just `docker compose up -d`)
 
-### Production - Caddy from source
+#### Production - Caddy from source
 1. Update `spaceapi.json` with your space details
 2. Update `Caddyfile`
 3. Copy `Caddyfile`, `docker-compose-caddy.yml` and `.env` to the parent directory and cd there
 4. Build binaries: `docker compose build --no-cache -f docker-compose-caddy.yml spaceapi`
 5. Start the containers: `docker compose up -d -f docker-compose-caddy.yml`
-
-### Production - From Docker image
-TODO
 
 ## Security Considerations
 
@@ -460,5 +584,6 @@ spaceapi-endpoint/
 
 ## Future Enhancements
 
-1. **Docker**: Make a docker image available and ready to use.
-2. **Webhooks**: Add webhook support for external integrations
+1. **Webhooks**: Add webhook support for external integrations
+2. **Metrics**: Add Prometheus metrics endpoint for monitoring
+3. **Event History**: Persistent storage for event timeline
