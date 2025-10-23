@@ -1,5 +1,7 @@
 # SpaceAPI Endpoint
 
+[![CI](https://github.com/q30-space/spaceapi-endpoint/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/q30-space/spaceapi-endpoint/actions/workflows/ci.yml)
+
 This document describes the SpaceAPI integration to provide A SpaceAPI endpoint.
 
 ## Overview
@@ -123,7 +125,7 @@ All POST endpoints require authentication via API key.
 Check the Configuration section below.
 
 ### Rate Limiting
-Failed authentication attempts are rate limited to prevent brute force attacks:
+Failed authentication attempts are rate limited to mitigate brute force attacks:
 
 - **Limit**: 5 failed attempts within 15 minutes
 - **Block Duration**: 1 hour
@@ -199,12 +201,12 @@ The `spaceicon` tool provides a simple way to check space status with visual ind
 #### Output Modes
 
 **Default Mode** (colored terminal output):
-- Space open: Green 󰯉
-- Space closed: Red 󰯉  
-- Error: Red 
+- Space open: Green icon
+- Space closed: Red icon
+- Error: Red icon
 
 **i3blocks Mode** (`--i3block` flag):
-- Line 1: Icon 󰯉
+- Line 1: Icon
 - Line 2: Extended title
 - Line 3: Hex color
   - Open: `#228800`

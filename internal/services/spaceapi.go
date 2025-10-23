@@ -2,9 +2,9 @@ package services
 
 import (
 	"encoding/json"
+	"github.com/q30-space/spaceapi-endpoint/internal/models"
 	"log"
 	"os"
-	"github.com/q30-space/spaceapi-endpoint/internal/models"
 )
 
 // LoadSpaceAPIData loads the SpaceAPI configuration from spaceapi.json

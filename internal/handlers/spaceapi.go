@@ -21,7 +21,9 @@ func NewSpaceAPIHandler(spaceAPI *models.SpaceAPI) *SpaceAPIHandler {
 
 func (h *SpaceAPIHandler) GetSpaceAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(h.spaceAPI)
+	if err := json.NewEncoder(w).Encode(h.spaceAPI); err != nil {
+		log.Printf("Error encoding SpaceAPI response: %v", err)
+	}
 }
 
 func (h *SpaceAPIHandler) UpdateState(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +50,9 @@ func (h *SpaceAPIHandler) UpdateState(w http.ResponseWriter, r *http.Request) {
 	h.spaceAPI.State.Lastchange = time.Now().Unix()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(h.spaceAPI.State)
+	if err := json.NewEncoder(w).Encode(h.spaceAPI.State); err != nil {
+		log.Printf("Error encoding State response: %v", err)
+	}
 
 	var ip_address string = r.RemoteAddr
 	log.Printf("%s State updated: %+v from %s", time.Unix(h.spaceAPI.State.Lastchange, 0).Format(time.RFC3339), h.spaceAPI.State, ip_address)
@@ -90,7 +94,9 @@ func (h *SpaceAPIHandler) UpdatePeopleCount(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(h.spaceAPI.Sensors.PeopleNowPresent)
+	if err := json.NewEncoder(w).Encode(h.spaceAPI.Sensors.PeopleNowPresent); err != nil {
+		log.Printf("Error encoding PeopleNowPresent response: %v", err)
+	}
 
 	log.Printf("%s People count updated: %+v from %s", time.Unix(h.spaceAPI.Sensors.PeopleNowPresent[0].Lastchange, 0).Format(time.RFC3339), h.spaceAPI.Sensors.PeopleNowPresent[0], r.RemoteAddr)
 }
@@ -111,12 +117,16 @@ func (h *SpaceAPIHandler) AddEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(event)
+	if err := json.NewEncoder(w).Encode(event); err != nil {
+		log.Printf("Error encoding Event response: %v", err)
+	}
 
 	log.Printf("%s Event added: %+v from %s", time.Unix(event.Timestamp, 0).Format(time.RFC3339), event, r.RemoteAddr)
 }
 
 func (h *SpaceAPIHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	if _, err := w.Write([]byte("OK")); err != nil {
+		log.Printf("Error writing health check response: %v", err)
+	}
 }

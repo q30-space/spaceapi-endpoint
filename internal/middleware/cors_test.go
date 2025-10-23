@@ -5,7 +5,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -23,16 +22,16 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_RegularRequest() {
 
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "success", w.Body.String())
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("success", w.Body.String())
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_POSTRequest() {
@@ -42,16 +41,16 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_POSTRequest() {
 
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "success", w.Body.String())
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("success", w.Body.String())
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_OPTIONSRequest() {
@@ -63,16 +62,16 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_OPTIONSRequest() {
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// This should not be called for OPTIONS requests
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("handler-called"))
+		_, _ = w.Write([]byte("handler-called"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "", w.Body.String()) // Handler should not be called
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("", w.Body.String()) // Handler should not be called
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_OPTIONSRequestWithOrigin() {
@@ -84,16 +83,16 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_OPTIONSRequestWithOrigi
 
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("handler-called"))
+		_, _ = w.Write([]byte("handler-called"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "", w.Body.String()) // Handler should not be called
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("", w.Body.String()) // Handler should not be called
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_WithAuthorizationHeader() {
@@ -103,16 +102,16 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_WithAuthorizationHeader
 
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "success", w.Body.String())
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("success", w.Body.String())
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_WithContentTypeHeader() {
@@ -122,16 +121,16 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_WithContentTypeHeader()
 
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "success", w.Body.String())
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("success", w.Body.String())
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_ErrorResponse() {
@@ -140,36 +139,36 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_ErrorResponse() {
 
 	handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error"))
+		_, _ = w.Write([]byte("error"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusInternalServerError, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "error", w.Body.String())
+	suite.Assert().Equal(http.StatusInternalServerError, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("error", w.Body.String())
 }
 
 func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_AllHTTPMethods() {
 	methods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"}
-	
+
 	for _, method := range methods {
 		req := httptest.NewRequest(method, "/api/space", nil)
 		w := httptest.NewRecorder()
 
 		handler := CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("success"))
+			_, _ = w.Write([]byte("success"))
 		}))
 
 		handler.ServeHTTP(w, req)
 
-		assert.Equal(suite.T(), http.StatusOK, w.Code)
-		assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-		assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-		assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+		suite.Assert().Equal(http.StatusOK, w.Code)
+		suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+		suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+		suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
 	}
 }
 
@@ -182,15 +181,15 @@ func (suite *CORSMiddlewareTestSuite) TestCORSMiddleware_ChainedMiddleware() {
 		// Add custom header
 		w.Header().Set("X-Custom-Header", "test-value")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	handler.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	assert.Equal(suite.T(), "*", w.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(suite.T(), "GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
-	assert.Equal(suite.T(), "Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
-	assert.Equal(suite.T(), "test-value", w.Header().Get("X-Custom-Header"))
-	assert.Equal(suite.T(), "success", w.Body.String())
+	suite.Assert().Equal(http.StatusOK, w.Code)
+	suite.Assert().Equal("*", w.Header().Get("Access-Control-Allow-Origin"))
+	suite.Assert().Equal("GET, POST, PUT, DELETE, OPTIONS", w.Header().Get("Access-Control-Allow-Methods"))
+	suite.Assert().Equal("Content-Type, Authorization", w.Header().Get("Access-Control-Allow-Headers"))
+	suite.Assert().Equal("test-value", w.Header().Get("X-Custom-Header"))
+	suite.Assert().Equal("success", w.Body.String())
 }

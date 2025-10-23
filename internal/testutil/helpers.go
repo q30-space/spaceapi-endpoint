@@ -1,14 +1,14 @@
 package testutil
 
 import (
-	"time"
 	"github.com/q30-space/spaceapi-endpoint/internal/models"
+	"time"
 )
 
 // NewMockSpaceAPI returns a fully populated SpaceAPI struct for testing
 func NewMockSpaceAPI() *models.SpaceAPI {
 	now := time.Now().Unix()
-	
+
 	return &models.SpaceAPI{
 		APICompatibility: []string{"15"},
 		Space:            "Test Space",
@@ -36,8 +36,8 @@ func NewMockSpaceAPI() *models.SpaceAPI {
 			},
 		},
 		Contact: models.Contact{
-			Email: "test@example.com",
-			IRC:   "#testspace",
+			Email:   "test@example.com",
+			IRC:     "#testspace",
 			Twitter: "@testspace",
 		},
 		Sensors: &models.Sensors{

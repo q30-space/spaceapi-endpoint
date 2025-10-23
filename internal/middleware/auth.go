@@ -30,12 +30,12 @@ func NewRateLimiter() *RateLimiter {
 		attempts: make(map[string]*FailedAttempts),
 		stopCh:   make(chan struct{}),
 	}
-	
+
 	// Start cleanup goroutine only if not in test mode
 	if !isTestMode() {
 		go rl.cleanup()
 	}
-	
+
 	return rl
 }
 
@@ -62,7 +62,7 @@ func (rl *RateLimiter) Stop() {
 func (rl *RateLimiter) cleanup() {
 	ticker := time.NewTicker(30 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ticker.C:
@@ -84,16 +84,16 @@ func (rl *RateLimiter) cleanup() {
 func (rl *RateLimiter) isBlocked(ip string) bool {
 	rl.mutex.RLock()
 	defer rl.mutex.RUnlock()
-	
+
 	attempt, exists := rl.attempts[ip]
 	if !exists {
 		return false
 	}
-	
+
 	if attempt.BlockedUntil != nil && time.Now().Before(*attempt.BlockedUntil) {
 		return true
 	}
-	
+
 	return false
 }
 
@@ -101,10 +101,10 @@ func (rl *RateLimiter) isBlocked(ip string) bool {
 func (rl *RateLimiter) recordFailedAttempt(ip string) {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
-	
+
 	now := time.Now()
 	attempt, exists := rl.attempts[ip]
-	
+
 	if !exists {
 		attempt = &FailedAttempts{
 			Count:        1,
@@ -114,12 +114,12 @@ func (rl *RateLimiter) recordFailedAttempt(ip string) {
 	} else {
 		attempt.Count++
 	}
-	
+
 	// If this is the 5th attempt within 15 minutes, block for 1 hour
 	if attempt.Count >= 5 && now.Sub(attempt.FirstAttempt) <= 15*time.Minute {
 		blockedUntil := now.Add(1 * time.Hour)
 		attempt.BlockedUntil = &blockedUntil
-		
+
 		log.Printf("SECURITY: IP %s blocked for 1 hour after %d failed authentication attempts", ip, attempt.Count)
 	}
 }
@@ -128,17 +128,17 @@ func (rl *RateLimiter) recordFailedAttempt(ip string) {
 func (rl *RateLimiter) getRetryAfter(ip string) int {
 	rl.mutex.RLock()
 	defer rl.mutex.RUnlock()
-	
+
 	attempt, exists := rl.attempts[ip]
 	if !exists || attempt.BlockedUntil == nil {
 		return 0
 	}
-	
+
 	retryAfter := int(time.Until(*attempt.BlockedUntil).Seconds())
 	if retryAfter < 0 {
 		return 0
 	}
-	
+
 	return retryAfter
 }
 
@@ -162,10 +162,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
 			clientIP = forwarded
 		}
-		
+
 		// Get rate limiter
 		rl := getRateLimiter()
-		
+
 		// Check if IP is currently blocked
 		if rl.isBlocked(clientIP) {
 			retryAfter := rl.getRetryAfter(clientIP)
@@ -173,7 +173,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Too many failed authentication attempts. Please try again later.", http.StatusTooManyRequests)
 			return
 		}
-		
+
 		// Get API key from environment
 		expectedKey := os.Getenv("SPACEAPI_AUTH_KEY")
 		if expectedKey == "" {
@@ -181,36 +181,36 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Server configuration error", http.StatusInternalServerError)
 			return
 		}
-		
+
 		// Extract API key from headers
 		var providedKey string
-		
+
 		// Check Authorization header (Bearer token)
 		if auth := r.Header.Get("Authorization"); auth != "" {
 			if len(auth) > 7 && auth[:7] == "Bearer " {
 				providedKey = auth[7:]
 			}
 		}
-		
+
 		// Check X-API-Key header
 		if providedKey == "" {
 			providedKey = r.Header.Get("X-API-Key")
 		}
-		
+
 		// Validate API key
 		if providedKey == "" {
 			rl.recordFailedAttempt(clientIP)
 			http.Error(w, "API key required", http.StatusUnauthorized)
 			return
 		}
-		
+
 		if providedKey != expectedKey {
 			rl.recordFailedAttempt(clientIP)
 			log.Printf("SECURITY: Invalid API key attempt from IP %s", clientIP)
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			return
 		}
-		
+
 		// Authentication successful, proceed to next handler
 		next.ServeHTTP(w, r)
 	})
