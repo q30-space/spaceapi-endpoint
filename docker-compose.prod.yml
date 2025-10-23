@@ -1,0 +1,61 @@
+# Production Docker Compose Configuration for SpaceAPI
+#
+# This configuration uses the pre-built Docker image from GitHub Container Registry.
+# No need to build from source - just configure and run!
+#
+# Setup:
+# 1. Copy spaceapi.json.example to spaceapi.json and configure it
+# 2. Create .env file with SPACEAPI_AUTH_KEY (see README.md)
+# 3. Run: docker-compose -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  spaceapi:
+    image: ghcr.io/q30-space/spaceapi-endpoint:latest
+    container_name: spaceapi
+
+    # Port mapping - adjust the left side to your host port
+    ports:
+      - "8080:8080"
+
+    # Mount your spaceapi.json configuration (read-only)
+    volumes:
+      - ./spaceapi.json:/app/spaceapi.json:ro
+
+    # Load environment variables from .env file
+    # Must contain: SPACEAPI_AUTH_KEY=your_secret_key_here
+    env_file:
+      - .env
+
+    # Optional: Override the port if needed
+    # environment:
+    #   - PORT=8080
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check to ensure service is running
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Resource limits (optional but recommended)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

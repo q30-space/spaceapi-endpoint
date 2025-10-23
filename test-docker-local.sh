@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+echo "🐳 Building Docker image locally..."
+docker build -f Dockerfile.spaceapi -t spaceapi:local .
+
+echo ""
+echo "✅ Docker image built successfully!"
+echo ""
+echo "📝 To run it, make sure you have:"
+echo "   1. A spaceapi.json file in the current directory"
+echo "   2. A .env file with SPACEAPI_AUTH_KEY"
+echo ""
+echo "Then run:"
+echo ""
+echo "  docker run -d \\"
+echo "    --name spaceapi \\"
+echo "    -p 8080:8080 \\"
+echo "    -v \$(pwd)/spaceapi.json:/app/spaceapi.json:ro \\"
+echo "    --env-file .env \\"
+echo "    --restart unless-stopped \\"
+echo "    spaceapi:local"
+echo ""
+echo "Or use the example config for testing:"
+echo ""
+echo "  cp spaceapi.json.example spaceapi.json"
+echo "  echo 'SPACEAPI_AUTH_KEY=test-key-12345' > .env"
+echo "  docker run -d \\"
+echo "    --name spaceapi \\"
+echo "    -p 8080:8080 \\"
+echo "    -v \$(pwd)/spaceapi.json:/app/spaceapi.json:ro \\"
+echo "    --env-file .env \\"
+echo "    spaceapi:local"
