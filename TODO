@@ -1,0 +1,6 @@
+# TODO
+
+- [ ] **CORS**: Currently allows all origins. Restrict in production.
+- [ ] **Input Validation**: Basic validation is implemented, but consider additional checks.
+- [ ] validate spaceapi.json after each update
+- [ ] end to end tests
