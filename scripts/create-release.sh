@@ -135,11 +135,6 @@ if ! ./bin/spaceapi --version; then
     exit 1
 fi
 
-if ! ./bin/spaceicon --version; then
-    print_error "spaceicon binary test failed"
-    exit 1
-fi
-
 # Commit changes
 print_status "Committing version update..."
 git add go.mod

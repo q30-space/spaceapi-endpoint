@@ -33,7 +33,6 @@ EXPECTED_GPL_LINK="https://www.gnu.org/licenses/"
 # Files to check (source code files)
 SOURCE_FILES=(
     "cmd/spaceapi/main.go"
-    "cmd/spaceicon/main.go"
     "internal/handlers/spaceapi.go"
     "internal/handlers/spaceapi_test.go"
     "internal/middleware/auth.go"
