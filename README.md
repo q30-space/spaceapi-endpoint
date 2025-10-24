@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/q30-space/spaceapi-endpoint/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/q30-space/spaceapi-endpoint/actions/workflows/ci.yml)
 
-This document describes the SpaceAPI integration to provide A SpaceAPI endpoint.
+An API server for a [SpaceAPI](https://spaceapi.io/) endpoint.
 
 ## Overview
 
-The SpaceAPI integration provides a RESTful API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status, plus a CLI tool for status monitoring.
+SpaceAPI-Endpoint provides a RESTful API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status, plus a CLI tool for status monitoring.
 
 ## Architecture
 
@@ -194,7 +194,7 @@ The `spaceicon` tool provides a simple way to check space status with visual ind
 # Check space status (colored output)
 ./bin/spaceicon https://your-spaceapi-url/api/space
 
-# i3blocks integration (two-line output)
+# i3blocks integration (three-line output)
 ./bin/spaceicon --i3block https://your-spaceapi-url/api/space
 ```
 
@@ -586,4 +586,3 @@ spaceapi-endpoint/
 
 1. **Webhooks**: Add webhook support for external integrations
 2. **Metrics**: Add Prometheus metrics endpoint for monitoring
-3. **Event History**: Persistent storage for event timeline
