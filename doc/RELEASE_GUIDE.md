@@ -185,3 +185,67 @@ If you encounter issues:
 2. Verify all prerequisites are met
 3. Check the [troubleshooting section](#troubleshooting)
 4. Open an issue on GitHub if needed
+
+
+## TLDR: Creating Releases
+
+### Automatic Release Process
+
+The project uses GitHub Actions for automated releases:
+
+1. **Create a version tag**:
+   ```bash
+   # Using the release script (recommended)
+   ./scripts/create-release.sh v1.0.0
+   
+   # Or using make
+   make release VERSION=v1.0.0
+   
+   # Or manually
+   git tag -a v1.0.0 -m "Release v1.0.0"
+   git push origin v1.0.0
+   ```
+
+2. **GitHub Actions will automatically**:
+   - Build binaries for multiple platforms (Linux, Windows, macOS)
+   - Create a GitHub release with download links
+   - Build and push Docker images to GitHub Container Registry
+   - Generate checksums for all binaries
+
+### Manual Release Process
+
+If you need to create a release manually:
+
+1. **Ensure go.mod is up to date**:
+   ```bash
+   go mod tidy
+   ```
+
+2. **Run tests and checks**:
+   ```bash
+   make test
+   make lint
+   make check-license
+   ```
+
+3. **Build binaries**:
+   ```bash
+   make build
+   ```
+
+4. **Create and push tag**:
+   ```bash
+   git add .
+   git commit -m "chore: bump version to v1.0.0"
+   git tag -a v1.0.0 -m "Release v1.0.0"
+   git push origin main
+   git push origin v1.0.0
+   ```
+
+### Docker Image Publishing
+
+Docker images are automatically published to GitHub Container Registry:
+
+- **Repository**: `ghcr.io/q30-space/spaceapi-endpoint`
+- **Tags**: Version tags, `latest`, branch names
+- **Architectures**: `linux/amd64`, `linux/arm64`
