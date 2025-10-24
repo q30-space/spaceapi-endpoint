@@ -6,26 +6,20 @@ An API server for a [SpaceAPI](https://spaceapi.io/) endpoint.
 
 ## Overview
 
-SpaceAPI-Endpoint provides a RESTful API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status, plus a CLI tool for status monitoring.
+SpaceAPI-Endpoint provides a RESTful API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status.
 
 ## Architecture
 
 - **SpaceAPI Server**: Go-based REST API server running on port 8089
-- **SpaceIcon CLI**: Command-line tool for displaying space status with icons
 - **Configuration**: JSON-based configuration file (`spaceapi.json`)
 
 ## Services
 
-### 1. SpaceAPI Server (spaceapi)
+### SpaceAPI Server (spaceapi)
 - **Port**: 8089 (configurable via PORT env var, defaults to 8080)
 - **Purpose**: Provides SpaceAPI endpoints
 - **Health Check**: `/health`
 - **Binary**: `bin/spaceapi`
-
-### 2. SpaceIcon CLI (spaceicon)
-- **Purpose**: Command-line tool for monitoring the space status of your endpoint from your terminal
-- **Features**: Colored terminal output and i3blocks integration
-- **Binary**: `bin/spaceicon`
 
 ## API Endpoints
 
@@ -183,46 +177,6 @@ For full documentation check the [Schema Documentation](https://spaceapi.io/docs
    ./scripts/update-space-status.sh open
    ```
 
-## CLI Tools
-
-### SpaceIcon CLI
-
-The `spaceicon` tool provides a simple way to check space status with visual indicators.
-
-#### Basic Usage
-```bash
-# Check space status (colored output)
-./bin/spaceicon https://your-spaceapi-url/api/space
-
-# i3blocks integration (three-line output)
-./bin/spaceicon --i3block https://your-spaceapi-url/api/space
-```
-
-#### Output Modes
-
-**Default Mode** (colored terminal output):
-- Space open: Green icon
-- Space closed: Red icon
-- Error: Red icon
-
-**i3blocks Mode** (`--i3block` flag):
-- Line 1: Icon
-- Line 2: Extended title
-- Line 3: Hex color
-  - Open: `#228800`
-  - Closed/Error: `#FF0F0F`
-
-#### Examples
-```bash
-# Local development
-./bin/spaceicon http://localhost:8089/api/space
-
-# Production API
-./bin/spaceicon https://localhost:8089/api/space
-
-# i3blocks configuration
-./bin/spaceicon --i3block https://localhost:8089/api/space
-```
 
 ## Management Scripts
 
@@ -319,14 +273,13 @@ internal/
 
 ## Building
 
-### Build All Binaries
+### Build Binary
 ```bash
-# Build both spaceapi server and spaceicon CLI
+# Build spaceapi server
 make build
 
-# Or build individually
+# Or build directly
 go build -o bin/spaceapi ./cmd/spaceapi
-go build -o bin/spaceicon ./cmd/spaceicon
 ```
 
 ### Development
@@ -335,9 +288,6 @@ go build -o bin/spaceicon ./cmd/spaceicon
 make run
 # or
 go run ./cmd/spaceapi
-
-# Test the CLI tool
-./bin/spaceicon http://localhost:8089/api/space
 ```
 
 ## Deployment
@@ -494,9 +444,8 @@ docker-compose logs -f spaceapi
 
 #### Production - From sources
 1. Update `spaceapi.json` with your space details
-2. Build binaries: `make build`
+2. Build binary: `make build`
 3. Deploy the `bin/spaceapi` binary
-4. Optionally deploy `bin/spaceicon` for monitoring
 
 #### Production - Docker from source
 1. Update `spaceapi.json` with your space details
@@ -573,8 +522,7 @@ curl http://localhost:8089/api/space
 ```
 spaceapi-endpoint/
 ├── cmd/
-│   ├── spaceapi/          # SpaceAPI server
-│   └── spaceicon/         # CLI status tool
+│   └── spaceapi/          # SpaceAPI server
 ├── internal/
 │   ├── handlers/          # HTTP handlers
 │   │   └── spaceapi_test.go  # Handler tests

@@ -74,23 +74,18 @@ jobs:
         
         # Linux AMD64
         GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceapi-linux-amd64 ./cmd/spaceapi
-        GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceicon-linux-amd64 ./cmd/spaceicon
         
         # Linux ARM64
         GOOS=linux GOARCH=arm64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceapi-linux-arm64 ./cmd/spaceapi
-        GOOS=linux GOARCH=arm64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceicon-linux-arm64 ./cmd/spaceicon
         
         # Windows AMD64
         GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceapi-windows-amd64.exe ./cmd/spaceapi
-        GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceicon-windows-amd64.exe ./cmd/spaceicon
         
         # macOS AMD64
         GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceapi-darwin-amd64 ./cmd/spaceapi
-        GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceicon-darwin-amd64 ./cmd/spaceicon
         
         # macOS ARM64 (Apple Silicon)
         GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceapi-darwin-arm64 ./cmd/spaceapi
-        GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=${{ steps.version.outputs.version }}" -o dist/spaceicon-darwin-arm64 ./cmd/spaceicon
         
         # Make binaries executable
         chmod +x dist/*
@@ -111,7 +106,6 @@ jobs:
           ### What's New
           - Initial release of SpaceAPI Endpoint
           - SpaceAPI v15 compliant REST API server
-          - SpaceIcon CLI tool for status monitoring
           - Docker image with multi-architecture support
           - Comprehensive test suite with 96.1% coverage
           

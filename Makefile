@@ -28,7 +28,6 @@ LDFLAGS = -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.
 # Build the application
 build:
 	go build $(LDFLAGS) -o bin/spaceapi ./cmd/spaceapi
-	go build $(LDFLAGS) -o bin/spaceicon ./cmd/spaceicon
 
 # Run the application
 run:
