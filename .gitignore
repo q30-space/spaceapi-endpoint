@@ -45,7 +45,7 @@ Thumbs.db
 .env.local
 .env.*.local
 !.env.example
-./spaceapi.json
+spaceapi.json
 
 # Docker
 .dockerignore
