@@ -16,6 +16,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -26,7 +28,23 @@ import (
 	"github.com/q30-space/spaceapi-endpoint/internal/services"
 )
 
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
+)
+
 func main() {
+	var showVersion bool
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
+	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("SpaceAPI Endpoint %s\n", version)
+		fmt.Printf("Commit: %s\n", commit)
+		fmt.Printf("Build Date: %s\n", date)
+		os.Exit(0)
+	}
 	// Load initial SpaceAPI data
 	spaceAPI := services.LoadSpaceAPIData()
 

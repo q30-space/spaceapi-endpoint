@@ -15,12 +15,20 @@
 
 # SpaceAPI Server Makefile
 
-.PHONY: build run test test-verbose test-coverage test-coverage-html clean docker-build docker-run check-license
+.PHONY: build run test test-verbose test-coverage test-coverage-html clean docker-build docker-run check-license release
+
+# Version information
+VERSION ?= dev
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Build flags
+LDFLAGS = -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
 
 # Build the application
 build:
-	go build -o bin/spaceapi ./cmd/spaceapi
-	go build -o bin/spaceicon ./cmd/spaceicon
+	go build $(LDFLAGS) -o bin/spaceapi ./cmd/spaceapi
+	go build $(LDFLAGS) -o bin/spaceicon ./cmd/spaceicon
 
 # Run the application
 run:
@@ -83,3 +91,11 @@ deps:
 # Check license headers
 check-license:
 	./scripts/check-license-headers.sh
+
+# Create a new release
+release:
+	@if [ -z "$(VERSION)" ] || [ "$(VERSION)" = "dev" ]; then \
+		echo "Error: VERSION must be set (e.g., make release VERSION=v1.0.0)"; \
+		exit 1; \
+	fi
+	./scripts/create-release.sh $(VERSION)

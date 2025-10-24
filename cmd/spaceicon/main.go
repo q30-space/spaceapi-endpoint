@@ -25,6 +25,12 @@ import (
 	"time"
 )
 
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
+)
+
 var debug = os.Getenv("SPACEICON_DEBUG") == "1"
 
 const (
@@ -130,8 +136,17 @@ func fetchOpen(url string) (bool, bool) { // (value, ok)
 }
 
 func main() {
+	var showVersion bool
 	i3block := flag.Bool("i3block", false, "output for i3blocks: 1st line icon, 2nd line hex color")
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("SpaceIcon CLI %s\n", version)
+		fmt.Printf("Commit: %s\n", commit)
+		fmt.Printf("Build Date: %s\n", date)
+		os.Exit(0)
+	}
 
 	// Expect exactly one remaining arg: URL
 	if flag.NArg() != 1 {
