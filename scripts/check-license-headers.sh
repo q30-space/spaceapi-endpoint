@@ -43,7 +43,7 @@ SOURCE_FILES=(
     "internal/testutil/helpers.go"
     "scripts/update-space-status.sh"
     "scripts/update-people-count.sh"
-    "test-docker-local.sh"
+    "scripts/create-release.sh"
     "Makefile"
     "Caddyfile"
 )
