@@ -607,8 +607,3 @@ To make the package public:
 2. Click "Package settings"
 3. Scroll to "Danger Zone"
 4. Click "Change visibility" → "Public"
-
-## Future Enhancements
-
-1. **Webhooks**: Add webhook support for external integrations
-2. **Metrics**: Add Prometheus metrics endpoint for monitoring
