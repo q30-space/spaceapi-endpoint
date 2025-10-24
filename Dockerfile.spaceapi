@@ -13,7 +13,12 @@ COPY cmd/ ./cmd/
 COPY internal/ ./internal/
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o spaceapi ./cmd/spaceapi
+ARG VERSION=dev
+ARG COMMIT=unknown
+ARG DATE=unknown
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
+    -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
+    -o spaceapi ./cmd/spaceapi
 
 # Final stage
 FROM alpine:latest

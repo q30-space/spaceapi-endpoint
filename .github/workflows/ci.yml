@@ -151,6 +151,9 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: [test, build, lint, license-check]
+    permissions:
+      contents: read
+      packages: write
     
     steps:
     - name: Checkout code
@@ -159,12 +162,33 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
+    - name: Log in to Container Registry
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+    
     - name: Build Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile.spaceapi
-        push: false
-        tags: spaceapi:test
+        push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
