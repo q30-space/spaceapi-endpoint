@@ -568,9 +568,9 @@ The project uses GitHub Actions for automated releases:
 
 If you need to create a release manually:
 
-1. **Update version in go.mod**:
+1. **Ensure go.mod is up to date**:
    ```bash
-   go mod edit -module=github.com/q30-space/spaceapi-endpoint@1.0.0
+   go mod tidy
    ```
 
 2. **Run tests and checks**:

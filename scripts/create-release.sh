@@ -101,7 +101,8 @@ fi
 
 # Update version in go.mod if needed (optional)
 print_status "Updating go.mod version..."
-go mod edit -module=github.com/q30-space/spaceapi-endpoint@$SEMVER
+# Note: We don't actually need to change the module path for releases
+# The module path should remain the same, only the version tag changes
 
 # Run tests
 print_status "Running tests..."
