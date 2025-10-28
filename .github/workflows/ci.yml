@@ -206,6 +206,8 @@ jobs:
   e2e-test:
     name: End-to-End API Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [test, build, lint, license-check, openapi-validate]
     
     steps:
