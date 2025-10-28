@@ -252,7 +252,6 @@ jobs:
           --workers 4 \
           --include-path-regex "^/(health|api/space)$" \
           --exclude-path-regex ".*/(state|people|event)$" \
-          --show-errors-tracebacks \
           || (docker compose logs && exit 1)
           
     - name: Run OpenAPI conformance tests (protected endpoints)
@@ -266,7 +265,6 @@ jobs:
           --checks all \
           --workers 4 \
           --include-path-regex ".*/(state|people|event)$" \
-          --show-errors-tracebacks \
           || (docker compose logs && exit 1)
           
     - name: Test authentication error cases

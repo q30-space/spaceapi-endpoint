@@ -92,8 +92,7 @@ schemathesis run openapi.yaml \
   --checks all \
   --workers 4 \
   --include-path-regex "^/(health|api/space)$" \
-  --exclude-path-regex ".*/(state|people|event)$" \
-  --show-errors-tracebacks
+  --exclude-path-regex ".*/(state|people|event)$"
 
 # 5. Run OpenAPI conformance tests (protected endpoints)
 schemathesis run openapi.yaml \
@@ -101,8 +100,7 @@ schemathesis run openapi.yaml \
   --header "X-API-Key: test-api-key" \
   --checks all \
   --workers 4 \
-  --include-path-regex ".*/(state|people|event)$" \
-  --show-errors-tracebacks
+  --include-path-regex ".*/(state|people|event)$"
 
 # 6. Test authentication (manual curl tests)
 # Missing API key (should return 401)
