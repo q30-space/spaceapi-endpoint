@@ -6,7 +6,7 @@ An API server for a [SpaceAPI](https://spaceapi.io/) endpoint.
 
 ## Overview
 
-SpaceAPI-Endpoint provides an REST API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status.
+SpaceAPI-Endpoint provides a REST API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status.
 
 ## Configuration
 
