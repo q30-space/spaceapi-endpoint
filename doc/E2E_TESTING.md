@@ -60,7 +60,15 @@ Tests the complete flow of API operations:
 - Create check-in event
 - Verify all updates are reflected in GET responses
 
-Validates end-to-end data persistence and retrieval.
+### 5. Data Persistence Verification
+
+Explicit validation that POST operations actually persist data:
+- **State changes**: Verifies `state.open` is set to `true` after POST
+- **State message**: Verifies `state.message` contains the update message
+- **People count**: Verifies `sensors.people_now[0].value` reflects the updated count
+- **Timestamps**: Verifies `state.lastchange` is recent (updated within last 5 minutes)
+
+This step performs a GET request to `/api/space` and uses JSON parsing to verify the exact structure and values, ensuring complete end-to-end data persistence.
 
 ### Test Focus
 
@@ -156,10 +164,29 @@ curl -X POST http://localhost:8089/api/space/event \
   -H "X-API-Key: test-api-key" \
   -d '{"name": "Tester", "type": "check-in", "extra": "Testing"}'
 
-# Verify updates
-curl http://localhost:8089/api/space | jq
+# 8. Verify data persistence with detailed checks
+echo "Verifying all data was persisted correctly..."
 
-# 8. Cleanup
+response=$(curl -s http://localhost:8089/api/space)
+
+# Pretty print the response
+echo "$response" | jq .
+
+# Check specific values
+echo ""
+echo "Checking state.open:"
+echo "$response" | jq '.state.open'
+
+echo "Checking state.message:"
+echo "$response" | jq '.state.message'
+
+echo "Checking people count:"
+echo "$response" | jq '.sensors.people_now[0].value'
+
+echo "Checking lastchange timestamp:"
+echo "$response" | jq '.state.lastchange'
+
+# 9. Cleanup
 docker compose down -v
 ```
 

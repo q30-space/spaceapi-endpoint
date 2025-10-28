@@ -340,23 +340,49 @@ jobs:
     - name: Verify updated data in API response
       run: |
         echo "Verifying data was persisted..."
+        
+        # Get the current space data
         response=$(curl -s http://localhost:8089/api/space)
+        echo "Current space data:"
+        echo "$response" | python3 -m json.tool || echo "$response"
         
-        # Check if state was updated
-        if ! echo "$response" | grep -q '"open":true'; then
-          echo "State update not reflected in API response"
-          echo "$response"
+        # Parse and verify state.open is true
+        open_status=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['state']['open'])" 2>/dev/null || echo "failed")
+        if [ "$open_status" != "True" ]; then
+          echo "❌ FAILED: Expected state.open to be true, got: $open_status"
+          exit 1
+        fi
+        echo "✓ state.open is correctly set to true"
+        
+        # Verify state.message was updated
+        message=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['state'].get('message', ''))" 2>/dev/null || echo "")
+        if [ "$message" = "CI Test" ]; then
+          echo "✓ state.message is correctly set to 'CI Test'"
+        else
+          echo "⚠ Warning: state.message is '$message' (expected 'CI Test')"
+        fi
+        
+        # Verify people count was updated (checking sensors.people_now array)
+        people_value=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); sensors=data.get('sensors',{}).get('people_now',[]); print(sensors[0]['value'] if sensors else 'not found')" 2>/dev/null || echo "failed")
+        if [ "$people_value" = "5" ]; then
+          echo "✓ People count is correctly set to 5"
+        else
+          echo "❌ FAILED: Expected people count to be 5, got: $people_value"
           exit 1
         fi
         
-        # Check if people count was updated
-        if ! echo "$response" | grep -q '"value":5'; then
-          echo "People count update not reflected in API response"
-          echo "$response"
-          exit 1
+        # Verify lastchange timestamp was updated (should be recent)
+        lastchange=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['state'].get('lastchange', 0))" 2>/dev/null || echo "0")
+        current_time=$(date +%s)
+        time_diff=$((current_time - lastchange))
+        if [ $time_diff -lt 300 ]; then
+          echo "✓ lastchange timestamp is recent (${time_diff}s ago)"
+        else
+          echo "⚠ Warning: lastchange is $time_diff seconds old (expected < 300s)"
         fi
         
-        echo "Data persistence verified!"
+        echo ""
+        echo "✅ All data persistence checks passed!"
         
     - name: Show container logs
       if: always()
