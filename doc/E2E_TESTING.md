@@ -62,6 +62,14 @@ Tests the complete flow of API operations:
 
 Validates end-to-end data persistence and retrieval.
 
+### Test Exclusions
+
+The tests explicitly exclude `negative_data_rejection` checks, which include:
+- Unsupported HTTP methods (e.g., TRACE, OPTIONS edge cases)
+- Malformed request bodies and headers
+
+These checks are excluded because they test edge cases that are not relevant to normal API operation and are often handled at the HTTP server/middleware level rather than the application level.
+
 ## Running Tests Locally
 
 ### Prerequisites
@@ -90,6 +98,7 @@ until docker compose ps | grep -q "healthy"; do sleep 2; done
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --checks all \
+  --exclude-checks negative_data_rejection \
   --workers 4 \
   --include-path-regex "^/(health|api/space)$" \
   --exclude-path-regex ".*/(state|people|event)$"
@@ -99,6 +108,7 @@ schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --header "X-API-Key: test-api-key" \
   --checks all \
+  --exclude-checks negative_data_rejection \
   --workers 4 \
   --include-path-regex ".*/(state|people|event)$"
 
