@@ -1,0 +1,860 @@
+openapi: 3.0.3
+info:
+  title: SpaceAPI Endpoint
+  version: 1.0.0
+  description: |
+    An API server for a [SpaceAPI](https://spaceapi.io/) endpoint that follows the SpaceAPI v15 specification to expose real-time information about hackerspace status.
+    
+    ## Authentication
+    Protected endpoints (POST operations) require API key authentication via the `X-API-Key` header.
+    
+    ## Rate Limiting
+    Failed authentication attempts are rate limited to prevent brute force attacks:
+    - **Limit**: 5 failed attempts within 15 minutes
+    - **Block Duration**: 1 hour
+    - **Response**: HTTP 429 Too Many Requests with `Retry-After` header
+    - **Scope**: Per IP address
+  contact:
+    name: SpaceAPI Endpoint Project
+    url: https://github.com/q30-space/spaceapi-endpoint
+  license:
+    name: GNU General Public License v3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: http://localhost:8089
+    description: Docker development server
+
+tags:
+  - name: public
+    description: Public endpoints (no authentication required)
+  - name: protected
+    description: Protected endpoints (API key required)
+
+paths:
+  /:
+    get:
+      tags:
+        - public
+      summary: Get SpaceAPI data (root endpoint)
+      description: Returns the complete SpaceAPI JSON response containing information about the hackerspace.
+      operationId: getSpaceAPIRoot
+      responses:
+        '200':
+          description: Successful response with SpaceAPI data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceAPI'
+              examples:
+                example:
+                  $ref: '#/components/examples/SpaceAPIExample'
+
+  /api/space:
+    get:
+      tags:
+        - public
+      summary: Get SpaceAPI data
+      description: Returns the complete SpaceAPI JSON response containing information about the hackerspace status, location, contact info, sensors, and more.
+      operationId: getSpaceAPI
+      responses:
+        '200':
+          description: Successful response with SpaceAPI data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceAPI'
+              examples:
+                example:
+                  $ref: '#/components/examples/SpaceAPIExample'
+
+  /api/space/state:
+    post:
+      tags:
+        - protected
+      summary: Update space state
+      description: |
+        Updates the space state (open/closed status). Requires API key authentication.
+        
+        The `lastchange` timestamp is automatically set to the current time.
+      operationId: updateState
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateUpdate'
+            examples:
+              openSpace:
+                summary: Open the space
+                value:
+                  open: true
+                  message: "Space is open for members"
+                  trigger_person: "John Doe"
+              closeSpace:
+                summary: Close the space
+                value:
+                  open: false
+                  message: "Closed for maintenance"
+                  trigger_person: "Jane Smith"
+      responses:
+        '200':
+          description: State updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/State'
+        '400':
+          description: Invalid JSON
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid JSON"
+        '401':
+          description: Missing or invalid API key
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid API key"
+        '403':
+          description: Access forbidden (API key format invalid)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Access forbidden"
+        '429':
+          description: Too many failed authentication attempts
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Number of seconds to wait before retrying
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Too many failed authentication attempts. Please try again later."
+
+  /api/space/people:
+    post:
+      tags:
+        - protected
+      summary: Update people count
+      description: |
+        Updates the people count in the space. Requires API key authentication.
+        
+        The sensor's `lastchange` timestamp is automatically set to the current time.
+        If the location doesn't exist, a new sensor entry is created.
+      operationId: updatePeopleCount
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeopleCountUpdate'
+            examples:
+              updateMainSpace:
+                summary: Update main space people count
+                value:
+                  value: 5
+                  location: "Main Space"
+              setToZero:
+                summary: Set people count to zero
+                value:
+                  value: 0
+      responses:
+        '200':
+          description: People count updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensorValue'
+        '400':
+          description: Invalid JSON
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid JSON"
+        '401':
+          description: Missing or invalid API key
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid API key"
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Access forbidden"
+        '429':
+          description: Too many failed authentication attempts
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Number of seconds to wait before retrying
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Too many failed authentication attempts. Please try again later."
+
+  /api/space/event:
+    post:
+      tags:
+        - protected
+      summary: Add an event
+      description: |
+        Adds an event to the space timeline. Requires API key authentication.
+        
+        The `timestamp` is automatically set to the current time.
+        Only the last 10 events are kept in memory.
+      operationId: addEvent
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreate'
+            examples:
+              checkIn:
+                summary: Check-in event
+                value:
+                  name: "John Doe"
+                  type: "check-in"
+                  extra: "Working on Arduino project"
+              checkOut:
+                summary: Check-out event
+                value:
+                  name: "Jane Smith"
+                  type: "check-out"
+      responses:
+        '200':
+          description: Event added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Invalid JSON
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid JSON"
+        '401':
+          description: Missing or invalid API key
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid API key"
+        '403':
+          description: Access forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Access forbidden"
+        '429':
+          description: Too many failed authentication attempts
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Number of seconds to wait before retrying
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Too many failed authentication attempts. Please try again later."
+
+  /health:
+    get:
+      tags:
+        - public
+      summary: Health check
+      description: Simple health check endpoint that returns "OK" if the service is running.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authenticated endpoints. Set via SPACEAPI_AUTH_KEY environment variable.
+
+  schemas:
+    SpaceAPI:
+      type: object
+      required:
+        - api_compatibility
+        - space
+        - logo
+        - url
+        - contact
+      properties:
+        api_compatibility:
+          type: array
+          items:
+            type: string
+          description: List of SpaceAPI versions supported
+          example: ["15"]
+        space:
+          type: string
+          description: Name of the space
+          example: "Hackerspace XYZ"
+        logo:
+          type: string
+          format: uri
+          description: URL to the space logo
+          example: "https://example.com/images/logo.png"
+        url:
+          type: string
+          format: uri
+          description: URL to the space website
+          example: "https://example.com"
+        location:
+          $ref: '#/components/schemas/Location'
+        spacefed:
+          $ref: '#/components/schemas/Spacefed'
+        cam:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: URLs of webcams in the space
+        state:
+          $ref: '#/components/schemas/State'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+          description: Recent events in the space (max 10)
+        contact:
+          $ref: '#/components/schemas/Contact'
+        sensors:
+          $ref: '#/components/schemas/Sensors'
+        feeds:
+          $ref: '#/components/schemas/Feeds'
+        projects:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: URLs to space projects
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        membership_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipPlan'
+        linked_spaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedSpace'
+
+    Location:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Physical address of the space
+          example: "123 Main Street, City, 12345"
+        lat:
+          type: number
+          format: double
+          description: Latitude coordinate
+          example: 52.520008
+        lon:
+          type: number
+          format: double
+          description: Longitude coordinate
+          example: 13.404954
+        timezone:
+          type: string
+          description: IANA timezone identifier
+          example: "Europe/Berlin"
+        country_code:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+          example: "DE"
+        hint:
+          type: string
+          description: Additional location hint or access instructions
+          example: "The door code is 1234."
+        areas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Area'
+
+    Area:
+      type: object
+      required:
+        - name
+        - square_meters
+      properties:
+        name:
+          type: string
+          description: Name of the area
+          example: "Workshop"
+        description:
+          type: string
+          description: Description of the area
+        square_meters:
+          type: number
+          format: double
+          description: Size of the area in square meters
+          example: 42.5
+
+    Spacefed:
+      type: object
+      properties:
+        spacenet:
+          type: boolean
+          description: Space is part of SpaceNet
+        spacesaml:
+          type: boolean
+          description: Space supports SpaceSAML
+
+    State:
+      type: object
+      properties:
+        open:
+          type: boolean
+          nullable: true
+          description: Whether the space is currently open
+          example: true
+        lastchange:
+          type: integer
+          format: int64
+          description: Unix timestamp of the last state change
+          example: 1640000000
+        trigger_person:
+          type: string
+          description: Person who triggered the state change
+          example: "John Doe"
+        message:
+          type: string
+          description: Additional message about the current state
+          example: "Space is open for members"
+        icon:
+          $ref: '#/components/schemas/Icon'
+
+    Icon:
+      type: object
+      required:
+        - open
+        - closed
+      properties:
+        open:
+          type: string
+          format: uri
+          description: Icon URL for open state
+        closed:
+          type: string
+          format: uri
+          description: Icon URL for closed state
+
+    StateUpdate:
+      type: object
+      properties:
+        open:
+          type: boolean
+          nullable: true
+          description: Whether the space is currently open
+          example: true
+        message:
+          type: string
+          description: Additional message about the state
+          example: "Space is open for members"
+        trigger_person:
+          type: string
+          description: Person triggering the state change
+          example: "John Doe"
+
+    Event:
+      type: object
+      required:
+        - name
+        - type
+        - timestamp
+      properties:
+        name:
+          type: string
+          description: Name associated with the event (usually a person)
+          example: "John Doe"
+        type:
+          type: string
+          description: Type of event
+          example: "check-in"
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp of the event
+          example: 1640000000
+        extra:
+          type: string
+          description: Additional information about the event
+          example: "Working on Arduino project"
+
+    EventCreate:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          description: Name associated with the event (usually a person)
+          example: "John Doe"
+        type:
+          type: string
+          description: Type of event
+          example: "check-in"
+        extra:
+          type: string
+          description: Additional information about the event
+          example: "Working on Arduino project"
+
+    Contact:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: Phone number
+          example: "+1-555-0123"
+        sip:
+          type: string
+          description: SIP address
+        keymasters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Keymaster'
+        irc:
+          type: string
+          description: IRC channel
+          example: "irc://irc.example.com/#hackerspace"
+        twitter:
+          type: string
+          description: Twitter handle
+          example: "@hackerspace"
+        mastodon:
+          type: string
+          description: Mastodon handle
+          example: "@hackerspace@mastodon.social"
+        facebook:
+          type: string
+          description: Facebook page
+        identica:
+          type: string
+          description: Identica handle
+        foursquare:
+          type: string
+          description: Foursquare venue ID
+        email:
+          type: string
+          format: email
+          description: Contact email
+          example: "contact@example.com"
+        ml:
+          type: string
+          description: Mailing list
+        xmpp:
+          type: string
+          description: XMPP/Jabber address
+        issue_mail:
+          type: string
+          format: email
+          description: Email for issue reports
+
+    Keymaster:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the keymaster
+        irc_nick:
+          type: string
+          description: IRC nickname
+        phone:
+          type: string
+          description: Phone number
+        email:
+          type: string
+          format: email
+          description: Email address
+        twitter:
+          type: string
+          description: Twitter handle
+        xmpp:
+          type: string
+          description: XMPP/Jabber address
+        mastodon:
+          type: string
+          description: Mastodon handle
+        matrix:
+          type: string
+          description: Matrix ID
+
+    Sensors:
+      type: object
+      properties:
+        temperature:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        door_locked:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        barometer:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        radiation:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        humidity:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        beverage_supply:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        power_consumption:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        wind:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        network_connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        account_balance:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        total_member_count:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        people_now_present:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        network_traffic:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorValue'
+
+    SensorValue:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+            - type: string
+            - type: boolean
+          description: The sensor value
+          example: 5
+        unit:
+          type: string
+          description: Unit of measurement
+          example: "°C"
+        location:
+          type: string
+          description: Location of the sensor
+          example: "Main Space"
+        name:
+          type: string
+          description: Name of the sensor
+          example: "People Counter"
+        description:
+          type: string
+          description: Description of the sensor
+        lastchange:
+          type: integer
+          format: int64
+          description: Unix timestamp of the last change
+          example: 1640000000
+
+    PeopleCountUpdate:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: integer
+          description: Number of people present
+          example: 5
+        location:
+          type: string
+          description: Location in the space (defaults to "Main Space" if not provided)
+          example: "Main Space"
+
+    Feeds:
+      type: object
+      properties:
+        blog:
+          $ref: '#/components/schemas/Feed'
+        wiki:
+          $ref: '#/components/schemas/Feed'
+        calendar:
+          $ref: '#/components/schemas/Feed'
+        flickr:
+          $ref: '#/components/schemas/Feed'
+
+    Feed:
+      type: object
+      required:
+        - url
+      properties:
+        type:
+          type: string
+          description: Feed type (e.g., rss, atom, ical)
+          example: "rss"
+        url:
+          type: string
+          format: uri
+          description: URL to the feed
+          example: "https://example.com/posts/index.xml"
+
+    Link:
+      type: object
+      required:
+        - name
+        - url
+      properties:
+        name:
+          type: string
+          description: Name of the link
+          example: "Wiki"
+        description:
+          type: string
+          description: Description of the link
+        url:
+          type: string
+          format: uri
+          description: URL of the link
+          example: "https://wiki.example.com"
+
+    MembershipPlan:
+      type: object
+      required:
+        - name
+        - value
+        - currency
+        - billing_interval
+      properties:
+        name:
+          type: string
+          description: Name of the membership plan
+          example: "Regular Member"
+        value:
+          type: number
+          format: double
+          description: Cost of the membership
+          example: 25.0
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: "EUR"
+        billing_interval:
+          type: string
+          description: Billing interval
+          example: "monthly"
+        description:
+          type: string
+          description: Description of the plan
+
+    LinkedSpace:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          format: uri
+          description: URL to the linked space's SpaceAPI endpoint
+        website:
+          type: string
+          format: uri
+          description: URL to the linked space's website
+          example: "https://q30.space/"
+
+  examples:
+    SpaceAPIExample:
+      summary: Example SpaceAPI response
+      value:
+        api_compatibility:
+          - "15"
+        space: "Hackerspace XYZ"
+        logo: "https://example.com/images/logo.png"
+        url: "https://example.com"
+        location:
+          address: "123 Main Street, City, 12345"
+          lat: 52.520008
+          lon: 13.404954
+          timezone: "Europe/Berlin"
+          country_code: "DE"
+          hint: "The door code is 1234."
+        contact:
+          email: "contact@example.com"
+        state:
+          icon:
+            open: "https://example.com/images/logo_open.png"
+            closed: "https://example.com/images/logo_closed.png"
+          open: true
+          lastchange: 1640000000
+          message: "Space is open"
+        sensors:
+          people_now_present:
+            - value: 5
+              location: "Main Space"
+              name: "People Counter"
+              description: "Number of people currently in the space"
+              lastchange: 1640000000
+        feeds:
+          blog:
+            type: "rss"
+            url: "https://example.com/posts/index.xml"
+        projects:
+          - "https://github.com/example"
+        linked_spaces:
+          - website: "https://q30.space/"
+
