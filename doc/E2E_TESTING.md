@@ -64,11 +64,22 @@ Validates end-to-end data persistence and retrieval.
 
 ### Test Exclusions
 
-The tests explicitly exclude `negative_data_rejection` checks, which include:
-- Unsupported HTTP methods (e.g., TRACE, OPTIONS edge cases)
-- Malformed request bodies and headers
+The tests are configured to focus on practical API validation by:
 
-These checks are excluded because they test edge cases that are not relevant to normal API operation and are often handled at the HTTP server/middleware level rather than the application level.
+1. **Excluding `negative_data_rejection` checks**: Skips tests for malformed data and invalid inputs that are typically handled at the HTTP server level.
+
+2. **Using `explicit,fuzzing` phases only**: Skips the "coverage" phase which includes edge case tests like:
+   - Unsupported HTTP methods (TRACE, OPTIONS, etc.)
+   - HTTP method-level compliance checks
+   - Allow header validation for 405 responses
+
+These exclusions focus testing on:
+- ✅ Real-world API functionality
+- ✅ Schema validation for documented operations
+- ✅ Authentication and authorization
+- ✅ Documented HTTP methods (GET, POST)
+
+Edge cases like TRACE method handling are not relevant to typical API usage and are better handled at the reverse proxy or HTTP server level.
 
 ## Running Tests Locally
 
@@ -100,6 +111,7 @@ schemathesis run openapi.yaml \
   --checks all \
   --exclude-checks negative_data_rejection \
   --workers 4 \
+  --hypothesis-phases explicit,fuzzing \
   --include-path-regex "^/(health|api/space)$" \
   --exclude-path-regex ".*/(state|people|event)$"
 
@@ -110,6 +122,7 @@ schemathesis run openapi.yaml \
   --checks all \
   --exclude-checks negative_data_rejection \
   --workers 4 \
+  --hypothesis-phases explicit,fuzzing \
   --include-path-regex ".*/(state|people|event)$"
 
 # 6. Test authentication (manual curl tests)

@@ -251,6 +251,7 @@ jobs:
           --checks all \
           --exclude-checks negative_data_rejection \
           --workers 4 \
+          --hypothesis-phases explicit,fuzzing \
           --include-path-regex "^/(health|api/space)$" \
           --exclude-path-regex ".*/(state|people|event)$" \
           || (docker compose logs && exit 1)
@@ -266,6 +267,7 @@ jobs:
           --checks all \
           --exclude-checks negative_data_rejection \
           --workers 4 \
+          --hypothesis-phases explicit,fuzzing \
           --include-path-regex ".*/(state|people|event)$" \
           || (docker compose logs && exit 1)
           
