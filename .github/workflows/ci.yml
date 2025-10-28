@@ -202,3 +202,197 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
+
+  e2e-test:
+    name: End-to-End API Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: [test, build, lint, license-check, openapi-validate]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install Schemathesis
+      run: |
+        pip install schemathesis requests
+        
+    - name: Prepare test configuration
+      run: |
+        # Use example config for testing
+        cp spaceapi.json.example spaceapi.json
+        
+    - name: Build and start Docker container
+      env:
+        SPACEAPI_AUTH_KEY: test-api-key-for-ci
+      run: |
+        docker compose up -d
+        
+    - name: Wait for service to be healthy
+      run: |
+        echo "Waiting for service to be ready..."
+        timeout 60 sh -c 'until docker compose ps | grep -q "healthy"; do sleep 2; done'
+        echo "Service is ready!"
+        
+    - name: Verify service is responding
+      run: |
+        curl -f http://localhost:8089/health || (docker compose logs && exit 1)
+        curl -f http://localhost:8089/ || (docker compose logs && exit 1)
+        
+    - name: Run OpenAPI conformance tests (public endpoints)
+      run: |
+        echo "Testing public endpoints against OpenAPI spec..."
+        schemathesis run openapi.yaml \
+          --url http://localhost:8089 \
+          --checks status_code_conformance,content_type_conformance,response_schema_conformance,response_headers_conformance \
+          --workers 4 \
+          --include-path-regex "^/(health|api/space)$" \
+          --exclude-path-regex ".*/(state|people|event)$" \
+          || (docker compose logs && exit 1)
+          
+    - name: Run OpenAPI conformance tests (protected endpoints)
+      env:
+        SPACEAPI_AUTH_KEY: test-api-key-for-ci
+      run: |
+        echo "Testing protected endpoints against OpenAPI spec..."
+        schemathesis run openapi.yaml \
+          --url http://localhost:8089 \
+          --header "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
+          --checks status_code_conformance,content_type_conformance,response_schema_conformance,response_headers_conformance \
+          --workers 4 \
+          --include-path-regex ".*/(state|people|event)$" \
+          || (docker compose logs && exit 1)
+          
+    - name: Test authentication error cases
+      run: |
+        echo "Testing authentication failures..."
+        # Test missing API key (should return 401)
+        response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8089/api/space/state \
+          -H "Content-Type: application/json" \
+          -d '{"open": true}')
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "401" ]; then
+          echo "Expected 401 for missing API key, got $http_code"
+          docker compose logs
+          exit 1
+        fi
+        
+        # Test invalid API key (should return 401)
+        response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8089/api/space/state \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: invalid-key" \
+          -d '{"open": true}')
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "401" ]; then
+          echo "Expected 401 for invalid API key, got $http_code"
+          docker compose logs
+          exit 1
+        fi
+        
+        echo "Authentication tests passed!"
+        
+    - name: Test successful API operations
+      env:
+        SPACEAPI_AUTH_KEY: test-api-key-for-ci
+      run: |
+        echo "Testing successful state update..."
+        response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8089/api/space/state \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
+          -d '{"open": true, "message": "CI Test", "trigger_person": "CI Bot"}')
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "200" ]; then
+          echo "Expected 200 for valid state update, got $http_code"
+          docker compose logs
+          exit 1
+        fi
+        
+        echo "Testing successful people count update..."
+        response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8089/api/space/people \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
+          -d '{"value": 5, "location": "Main Space"}')
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "200" ]; then
+          echo "Expected 200 for valid people count update, got $http_code"
+          docker compose logs
+          exit 1
+        fi
+        
+        echo "Testing successful event creation..."
+        response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8089/api/space/event \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
+          -d '{"name": "CI Bot", "type": "check-in", "extra": "Running E2E tests"}')
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "200" ]; then
+          echo "Expected 200 for valid event creation, got $http_code"
+          docker compose logs
+          exit 1
+        fi
+        
+        echo "API operation tests passed!"
+        
+    - name: Verify updated data in API response
+      run: |
+        echo "Verifying data was persisted..."
+        
+        # Get the current space data
+        response=$(curl -s http://localhost:8089/api/space)
+        echo "Current space data:"
+        echo "$response" | python3 -m json.tool || echo "$response"
+        
+        # Parse and verify state.open is true
+        open_status=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['state']['open'])" 2>/dev/null || echo "failed")
+        if [ "$open_status" != "True" ]; then
+          echo "❌ FAILED: Expected state.open to be true, got: $open_status"
+          exit 1
+        fi
+        echo "✓ state.open is correctly set to true"
+        
+        # Verify state.message was updated
+        message=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['state'].get('message', ''))" 2>/dev/null || echo "")
+        if [ "$message" = "CI Test" ]; then
+          echo "✓ state.message is correctly set to 'CI Test'"
+        else
+          echo "⚠ Warning: state.message is '$message' (expected 'CI Test')"
+        fi
+        
+        # Verify people count was updated (checking sensors.people_now_present array)
+        people_value=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); sensors=data.get('sensors',{}).get('people_now_present',[]); print(sensors[0]['value'] if sensors else 'not found')" 2>/dev/null || echo "failed")
+        if [ "$people_value" = "5" ]; then
+          echo "✓ People count is correctly set to 5"
+        else
+          echo "❌ FAILED: Expected people count to be 5, got: $people_value"
+          exit 1
+        fi
+        
+        # Verify lastchange timestamp was updated (should be recent)
+        lastchange=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['state'].get('lastchange', 0))" 2>/dev/null || echo "0")
+        current_time=$(date +%s)
+        time_diff=$((current_time - lastchange))
+        if [ $time_diff -lt 300 ]; then
+          echo "✓ lastchange timestamp is recent (${time_diff}s ago)"
+        else
+          echo "⚠ Warning: lastchange is $time_diff seconds old (expected < 300s)"
+        fi
+        
+        echo ""
+        echo "✅ All data persistence checks passed!"
+        
+    - name: Show container logs
+      if: always()
+      run: |
+        echo "=== Container Logs ==="
+        docker compose logs
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose down -v
