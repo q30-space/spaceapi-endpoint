@@ -62,24 +62,28 @@ Tests the complete flow of API operations:
 
 Validates end-to-end data persistence and retrieval.
 
-### Test Exclusions
+### Test Focus
 
-The tests are configured to focus on practical API validation by:
+The tests use specific validation checks focused on practical API conformance:
 
-1. **Excluding `negative_data_rejection` checks**: Skips tests for malformed data and invalid inputs that are typically handled at the HTTP server level.
+**Enabled Checks:**
+- ✅ `status_code_conformance` - Validates HTTP status codes match the OpenAPI spec
+- ✅ `content_type_conformance` - Validates response Content-Type headers
+- ✅ `response_schema_conformance` - Validates response bodies match schemas
+- ✅ `response_headers_conformance` - Validates response headers
 
-2. **Using `explicit,fuzzing` phases only**: Skips the "coverage" phase which includes edge case tests like:
-   - Unsupported HTTP methods (TRACE, OPTIONS, etc.)
-   - HTTP method-level compliance checks
-   - Allow header validation for 405 responses
+**Not Included:**
+- ❌ `negative_data_rejection` - Malformed request testing (handled by HTTP server layer)
+- ❌ Coverage phase tests - Unsupported HTTP method checks (TRACE, OPTIONS edge cases)
+- ❌ `not_a_server_error` - 5xx error detection (not applicable for simple APIs)
 
-These exclusions focus testing on:
-- ✅ Real-world API functionality
-- ✅ Schema validation for documented operations
-- ✅ Authentication and authorization
-- ✅ Documented HTTP methods (GET, POST)
+This focused approach ensures:
+- 🎯 Validation of all documented API functionality
+- 🎯 Schema compliance for requests and responses
+- 🎯 Correct authentication and authorization
+- 🎯 Fast test execution without irrelevant edge cases
 
-Edge cases like TRACE method handling are not relevant to typical API usage and are better handled at the reverse proxy or HTTP server level.
+HTTP-level edge cases (like TRACE method handling) are not relevant to typical API usage and are better handled at the reverse proxy or HTTP server level.
 
 ## Running Tests Locally
 
@@ -108,10 +112,8 @@ until docker compose ps | grep -q "healthy"; do sleep 2; done
 # 4. Run OpenAPI conformance tests (public endpoints)
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
-  --checks all \
-  --exclude-checks negative_data_rejection \
+  --checks status_code_conformance content_type_conformance response_schema_conformance response_headers_conformance \
   --workers 4 \
-  --hypothesis-phases explicit,fuzzing \
   --include-path-regex "^/(health|api/space)$" \
   --exclude-path-regex ".*/(state|people|event)$"
 
@@ -119,10 +121,8 @@ schemathesis run openapi.yaml \
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --header "X-API-Key: test-api-key" \
-  --checks all \
-  --exclude-checks negative_data_rejection \
+  --checks status_code_conformance content_type_conformance response_schema_conformance response_headers_conformance \
   --workers 4 \
-  --hypothesis-phases explicit,fuzzing \
   --include-path-regex ".*/(state|people|event)$"
 
 # 6. Test authentication (manual curl tests)

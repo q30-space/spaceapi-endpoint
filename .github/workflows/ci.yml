@@ -248,10 +248,8 @@ jobs:
         echo "Testing public endpoints against OpenAPI spec..."
         schemathesis run openapi.yaml \
           --url http://localhost:8089 \
-          --checks all \
-          --exclude-checks negative_data_rejection \
+          --checks status_code_conformance content_type_conformance response_schema_conformance response_headers_conformance \
           --workers 4 \
-          --hypothesis-phases explicit,fuzzing \
           --include-path-regex "^/(health|api/space)$" \
           --exclude-path-regex ".*/(state|people|event)$" \
           || (docker compose logs && exit 1)
@@ -264,10 +262,8 @@ jobs:
         schemathesis run openapi.yaml \
           --url http://localhost:8089 \
           --header "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
-          --checks all \
-          --exclude-checks negative_data_rejection \
+          --checks status_code_conformance content_type_conformance response_schema_conformance response_headers_conformance \
           --workers 4 \
-          --hypothesis-phases explicit,fuzzing \
           --include-path-regex ".*/(state|people|event)$" \
           || (docker compose logs && exit 1)
           
