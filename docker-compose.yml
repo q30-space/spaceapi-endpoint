@@ -10,7 +10,7 @@ services:
     ports:
       - "8089:8080"
     volumes:
-      - ./spaceapi.json:/root/spaceapi.json:ro
+      - ./spaceapi.json:/app/spaceapi.json:ro
     environment:
       - PORT=8080
       - SPACEAPI_AUTH_KEY=${SPACEAPI_AUTH_KEY}
