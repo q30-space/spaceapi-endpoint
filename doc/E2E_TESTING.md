@@ -112,7 +112,7 @@ until docker compose ps | grep -q "healthy"; do sleep 2; done
 # 4. Run OpenAPI conformance tests (public endpoints)
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
-  --checks status_code_conformance content_type_conformance response_schema_conformance response_headers_conformance \
+  --checks status_code_conformance,content_type_conformance,response_schema_conformance,response_headers_conformance \
   --workers 4 \
   --include-path-regex "^/(health|api/space)$" \
   --exclude-path-regex ".*/(state|people|event)$"
@@ -121,7 +121,7 @@ schemathesis run openapi.yaml \
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --header "X-API-Key: test-api-key" \
-  --checks status_code_conformance content_type_conformance response_schema_conformance response_headers_conformance \
+  --checks status_code_conformance,content_type_conformance,response_schema_conformance,response_headers_conformance \
   --workers 4 \
   --include-path-regex ".*/(state|people|event)$"
 
