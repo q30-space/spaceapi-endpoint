@@ -216,7 +216,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        cache: 'pip'
         
     - name: Install Schemathesis
       run: |
@@ -231,18 +230,18 @@ jobs:
       env:
         SPACEAPI_AUTH_KEY: test-api-key-for-ci
       run: |
-        docker-compose up -d
+        docker compose up -d
         
     - name: Wait for service to be healthy
       run: |
         echo "Waiting for service to be ready..."
-        timeout 60 sh -c 'until docker-compose ps | grep -q "healthy"; do sleep 2; done'
+        timeout 60 sh -c 'until docker compose ps | grep -q "healthy"; do sleep 2; done'
         echo "Service is ready!"
         
     - name: Verify service is responding
       run: |
-        curl -f http://localhost:8089/health || (docker-compose logs && exit 1)
-        curl -f http://localhost:8089/ || (docker-compose logs && exit 1)
+        curl -f http://localhost:8089/health || (docker compose logs && exit 1)
+        curl -f http://localhost:8089/ || (docker compose logs && exit 1)
         
     - name: Run OpenAPI conformance tests (public endpoints)
       run: |
@@ -256,7 +255,7 @@ jobs:
           --exclude-path-regex ".*/(state|people|event)$" \
           --show-errors-tracebacks \
           --report \
-          || (docker-compose logs && exit 1)
+          || (docker compose logs && exit 1)
           
     - name: Run OpenAPI conformance tests (protected endpoints)
       env:
@@ -272,7 +271,7 @@ jobs:
           --include-path-regex ".*/(state|people|event)$" \
           --show-errors-tracebacks \
           --report \
-          || (docker-compose logs && exit 1)
+          || (docker compose logs && exit 1)
           
     - name: Test authentication error cases
       run: |
@@ -284,7 +283,7 @@ jobs:
         http_code=$(echo "$response" | tail -n1)
         if [ "$http_code" != "401" ]; then
           echo "Expected 401 for missing API key, got $http_code"
-          docker-compose logs
+          docker compose logs
           exit 1
         fi
         
@@ -296,7 +295,7 @@ jobs:
         http_code=$(echo "$response" | tail -n1)
         if [ "$http_code" != "401" ]; then
           echo "Expected 401 for invalid API key, got $http_code"
-          docker-compose logs
+          docker compose logs
           exit 1
         fi
         
@@ -314,7 +313,7 @@ jobs:
         http_code=$(echo "$response" | tail -n1)
         if [ "$http_code" != "200" ]; then
           echo "Expected 200 for valid state update, got $http_code"
-          docker-compose logs
+          docker compose logs
           exit 1
         fi
         
@@ -326,7 +325,7 @@ jobs:
         http_code=$(echo "$response" | tail -n1)
         if [ "$http_code" != "200" ]; then
           echo "Expected 200 for valid people count update, got $http_code"
-          docker-compose logs
+          docker compose logs
           exit 1
         fi
         
@@ -338,7 +337,7 @@ jobs:
         http_code=$(echo "$response" | tail -n1)
         if [ "$http_code" != "200" ]; then
           echo "Expected 200 for valid event creation, got $http_code"
-          docker-compose logs
+          docker compose logs
           exit 1
         fi
         
@@ -369,9 +368,9 @@ jobs:
       if: always()
       run: |
         echo "=== Container Logs ==="
-        docker-compose logs
+        docker compose logs
         
     - name: Cleanup
       if: always()
       run: |
-        docker-compose down -v
+        docker compose down -v

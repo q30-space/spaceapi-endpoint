@@ -70,7 +70,7 @@ Validates end-to-end data persistence and retrieval.
 # Install Schemathesis
 pip install schemathesis requests
 
-# Ensure you have Docker and docker-compose installed
+# Ensure you have Docker with Compose V2 installed
 ```
 
 ### Run the full E2E test suite
@@ -81,10 +81,10 @@ cp spaceapi.json.example spaceapi.json
 
 # 2. Start the service
 export SPACEAPI_AUTH_KEY="test-api-key"
-docker-compose up -d
+docker compose up -d
 
 # 3. Wait for service to be healthy
-until docker-compose ps | grep -q "healthy"; do sleep 2; done
+until docker compose ps | grep -q "healthy"; do sleep 2; done
 
 # 4. Run OpenAPI conformance tests (public endpoints)
 schemathesis run openapi.yaml \
@@ -143,7 +143,7 @@ curl -X POST http://localhost:8089/api/space/event \
 curl http://localhost:8089/api/space | jq
 
 # 8. Cleanup
-docker-compose down -v
+docker compose down -v
 ```
 
 ## CI Pipeline Integration
@@ -167,8 +167,8 @@ e2e-test (runs in parallel with docker-build)
 
 Check if the service started correctly:
 ```bash
-docker-compose logs
-docker-compose ps
+docker compose logs
+docker compose ps
 ```
 
 ### Tests fail on specific endpoints
