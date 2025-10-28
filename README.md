@@ -243,7 +243,7 @@ go run ./cmd/spaceapi
 
 The project includes a comprehensive test suite covering all critical components.
 
-### Running Tests
+### Unit Tests
 
 ```bash
 # Run all tests (recommended)
@@ -277,6 +277,19 @@ go test ./internal/handlers ./internal/middleware
 go test -coverprofile=coverage.out ./internal/handlers ./internal/middleware
 go tool cover -html=coverage.out
 ```
+
+### End-to-End Tests
+
+The CI pipeline includes comprehensive E2E tests that validate the Docker container against the OpenAPI specification using [Schemathesis](https://schemathesis.readthedocs.io/).
+
+**Test Coverage:**
+- ✅ OpenAPI conformance testing (all endpoints)
+- ✅ Authentication and authorization
+- ✅ Request/response schema validation
+- ✅ Data persistence verification
+- ✅ Error handling
+
+**For detailed information about E2E testing, including how to run tests locally, see [E2E Testing Documentation](doc/E2E_TESTING.md).**
 
 ## Security Considerations
 
@@ -346,6 +359,7 @@ spaceapi-endpoint/
 │   └── testutil/         # Test helpers
 ├── doc/                  # Documentation
 │   ├── OPENAPI.md        # OpenAPI documentation
+│   ├── E2E_TESTING.md    # End-to-end testing guide
 │   ├── DEPLOYMENT_GUIDE.md
 │   └── ...
 ├── scripts/              # Management scripts
