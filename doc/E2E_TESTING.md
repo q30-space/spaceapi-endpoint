@@ -90,23 +90,19 @@ until docker compose ps | grep -q "healthy"; do sleep 2; done
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --checks all \
-  --hypothesis-phases=explicit \
   --workers 4 \
   --include-path-regex "^/(health|api/space)$" \
   --exclude-path-regex ".*/(state|people|event)$" \
-  --show-errors-tracebacks \
-  --report
+  --show-errors-tracebacks
 
 # 5. Run OpenAPI conformance tests (protected endpoints)
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --header "X-API-Key: test-api-key" \
   --checks all \
-  --hypothesis-phases=explicit \
   --workers 4 \
   --include-path-regex ".*/(state|people|event)$" \
-  --show-errors-tracebacks \
-  --report
+  --show-errors-tracebacks
 
 # 6. Test authentication (manual curl tests)
 # Missing API key (should return 401)
@@ -207,9 +203,7 @@ Modify Schemathesis checks:
 schemathesis run openapi.yaml \
   --url http://localhost:8089 \
   --checks all \
-  --hypothesis-max-examples 50 \  # More test cases
-  --hypothesis-seed 1234 \         # Reproducible tests
-  --stateful=links                 # Stateful testing
+  --hypothesis-max-examples 50  # More test cases
 ```
 
 ### Add load testing

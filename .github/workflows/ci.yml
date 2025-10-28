@@ -249,12 +249,10 @@ jobs:
         schemathesis run openapi.yaml \
           --url http://localhost:8089 \
           --checks all \
-          --hypothesis-phases=explicit \
           --workers 4 \
           --include-path-regex "^/(health|api/space)$" \
           --exclude-path-regex ".*/(state|people|event)$" \
           --show-errors-tracebacks \
-          --report \
           || (docker compose logs && exit 1)
           
     - name: Run OpenAPI conformance tests (protected endpoints)
@@ -266,11 +264,9 @@ jobs:
           --url http://localhost:8089 \
           --header "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
           --checks all \
-          --hypothesis-phases=explicit \
           --workers 4 \
           --include-path-regex ".*/(state|people|event)$" \
           --show-errors-tracebacks \
-          --report \
           || (docker compose logs && exit 1)
           
     - name: Test authentication error cases
