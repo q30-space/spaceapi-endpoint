@@ -362,8 +362,8 @@ jobs:
           echo "⚠ Warning: state.message is '$message' (expected 'CI Test')"
         fi
         
-        # Verify people count was updated (checking sensors.people_now array)
-        people_value=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); sensors=data.get('sensors',{}).get('people_now',[]); print(sensors[0]['value'] if sensors else 'not found')" 2>/dev/null || echo "failed")
+        # Verify people count was updated (checking sensors.people_now_present array)
+        people_value=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); sensors=data.get('sensors',{}).get('people_now_present',[]); print(sensors[0]['value'] if sensors else 'not found')" 2>/dev/null || echo "failed")
         if [ "$people_value" = "5" ]; then
           echo "✓ People count is correctly set to 5"
         else
