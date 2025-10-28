@@ -100,6 +100,19 @@ jobs:
     - name: Check license headers
       run: ./scripts/check-license-headers.sh
 
+  openapi-validate:
+    name: OpenAPI Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Validate OpenAPI specification
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/spec \
+          openapitools/openapi-generator-cli validate -i /spec/openapi.yaml
+
   security:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -147,7 +160,7 @@ jobs:
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: [test, build, lint, license-check]
+    needs: [test, build, lint, license-check, openapi-validate]
     permissions:
       contents: read
       packages: write

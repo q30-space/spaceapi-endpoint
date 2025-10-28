@@ -49,3 +49,8 @@ spaceapi.json
 
 # Docker
 .dockerignore
+.swagger-ui.html
+.serve-swagger.py
+
+# misc
+*.xcf

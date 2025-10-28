@@ -4,6 +4,7 @@
 
 An API server for a [SpaceAPI](https://spaceapi.io/) endpoint.
 
+![spaceApiEndpoint Logo](assets/spaceApiEndpointLogo_cut.png)
 ## Overview
 
 SpaceAPI-Endpoint provides a REST API that follows the [SpaceAPI v15 specification](https://spaceapi.io/docs/) to expose real-time information about the hackerspace status.
@@ -64,7 +65,27 @@ The easiest way to deploy is using the pre-built Docker image from GitHub Contai
 **For other deployment options, check the [Deployment Guide](doc/DEPLOYMENT_GUIDE.md).**
 
 
-## API Endpoints
+## API Documentation
+
+The complete API is documented using the [OpenAPI Specification (OAS) 3.0](https://swagger.io/specification/) in [`openapi.yaml`](openapi.yaml).
+
+### Quick Start with Swagger UI
+
+```bash
+# View interactive API documentation
+make openapi-ui
+```
+
+Then visit http://localhost:8081 to browse and test the API.
+
+### Other Options
+
+You can also view and interact with the API documentation using:
+- **Swagger UI**: Upload `openapi.yaml` to [Swagger Editor](https://editor.swagger.io/)
+- **Redoc**: Use [Redocly](https://redocly.github.io/redoc/) for beautiful API docs
+- **VS Code**: Use the [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi) extension
+
+**For detailed information about the OpenAPI specification, client generation, and more, see the [OpenAPI Documentation](doc/OPENAPI.md).**
 
 ### GET `/api/space`
 Returns the complete SpaceAPI JSON response.
@@ -323,8 +344,13 @@ spaceapi-endpoint/
 │   ├── models/           # Data models
 │   ├── services/         # Business logic
 │   └── testutil/         # Test helpers
+├── doc/                  # Documentation
+│   ├── OPENAPI.md        # OpenAPI documentation
+│   ├── DEPLOYMENT_GUIDE.md
+│   └── ...
 ├── scripts/              # Management scripts
 ├── bin/                  # Built binaries
+├── openapi.yaml          # OpenAPI 3.0 specification
 ├── spaceapi.json         # Configuration
 └── Makefile             # Build automation
 ```
