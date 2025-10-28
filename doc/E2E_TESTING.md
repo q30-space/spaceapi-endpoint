@@ -88,7 +88,7 @@ until docker compose ps | grep -q "healthy"; do sleep 2; done
 
 # 4. Run OpenAPI conformance tests (public endpoints)
 schemathesis run openapi.yaml \
-  --base-url http://localhost:8089 \
+  --url http://localhost:8089 \
   --checks all \
   --hypothesis-phases=explicit \
   --workers 4 \
@@ -99,7 +99,7 @@ schemathesis run openapi.yaml \
 
 # 5. Run OpenAPI conformance tests (protected endpoints)
 schemathesis run openapi.yaml \
-  --base-url http://localhost:8089 \
+  --url http://localhost:8089 \
   --header "X-API-Key: test-api-key" \
   --checks all \
   --hypothesis-phases=explicit \
@@ -205,7 +205,7 @@ Modify Schemathesis checks:
 
 ```bash
 schemathesis run openapi.yaml \
-  --base-url http://localhost:8089 \
+  --url http://localhost:8089 \
   --checks all \
   --hypothesis-max-examples 50 \  # More test cases
   --hypothesis-seed 1234 \         # Reproducible tests

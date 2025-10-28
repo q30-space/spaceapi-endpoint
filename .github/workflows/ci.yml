@@ -247,7 +247,7 @@ jobs:
       run: |
         echo "Testing public endpoints against OpenAPI spec..."
         schemathesis run openapi.yaml \
-          --base-url http://localhost:8089 \
+          --url http://localhost:8089 \
           --checks all \
           --hypothesis-phases=explicit \
           --workers 4 \
@@ -263,7 +263,7 @@ jobs:
       run: |
         echo "Testing protected endpoints against OpenAPI spec..."
         schemathesis run openapi.yaml \
-          --base-url http://localhost:8089 \
+          --url http://localhost:8089 \
           --header "X-API-Key: ${SPACEAPI_AUTH_KEY}" \
           --checks all \
           --hypothesis-phases=explicit \
