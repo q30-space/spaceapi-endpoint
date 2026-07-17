@@ -13,7 +13,7 @@ This guide will help you deploy the SpaceAPI server using the pre-built Docker i
 
 1. Copy [docker-compose-prod.yml](../docker-compose.prod.yml) to your host.
 2. Create your `.env` and `spaceapi.json` files as described in [README](../README.md).
-3. `docker-compose up -d`
+3. `docker compose up -d`
 
 **Making the Package Public:**
 1. Go to your GitHub repository page
@@ -98,7 +98,7 @@ docker run -d \
 curl -O https://raw.githubusercontent.com/q30-space/spaceapi-endpoint/main/docker-compose.prod.yml
 
 # Start the service
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### 5. Verify It Works
@@ -191,7 +191,7 @@ server {
 docker pull ghcr.io/q30-space/spaceapi-endpoint:latest
 
 # Recreate the container
-docker-compose -f docker-compose.prod.yml up -d --force-recreate
+docker compose -f docker-compose.prod.yml up -d --force-recreate
 
 # Or with plain docker
 docker stop spaceapi
@@ -203,7 +203,7 @@ docker rm spaceapi
 
 ```bash
 # With Docker Compose
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 
 # With plain Docker
 docker logs -f spaceapi
@@ -326,13 +326,13 @@ The repository includes a production-ready docker-compose configuration (`docker
 
 ```bash
 # Use the provided production compose file
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 
 # Stop the service
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 ```
 
 Or create your own `docker-compose.yml`:
@@ -361,7 +361,7 @@ services:
 
 Then run:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 #### Available Image Tags
@@ -418,13 +418,13 @@ server {
 # Start the service
 make docker-compose-up
 # or
-docker-compose up -d
+docker compose up -d
 
 # Check status
-docker-compose ps
+docker compose ps
 
 # View logs
-docker-compose logs -f spaceapi
+docker compose logs -f spaceapi
 ```
 
 #### Production - From sources
