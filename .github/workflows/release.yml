@@ -50,23 +50,26 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.22'
+        go-version: '1.26'
         cache: true
     
     - name: Determine version
       id: version
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        INPUT_VERSION: ${{ github.event.inputs.version }}
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          VERSION="${{ github.event.inputs.version }}"
+        if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+          VERSION="$INPUT_VERSION"
         else
-          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION="${GITHUB_REF#refs/tags/}"
         fi
-        
+
         # Remove 'v' prefix if present for semantic versioning
-        SEMVER=${VERSION#v}
-        
-        echo "version=$SEMVER" >> $GITHUB_OUTPUT
-        echo "tag=$VERSION" >> $GITHUB_OUTPUT
+        SEMVER="${VERSION#v}"
+
+        echo "version=$SEMVER" >> "$GITHUB_OUTPUT"
+        echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
         echo "Version: $SEMVER"
         echo "Tag: $VERSION"
     
@@ -186,9 +189,11 @@ jobs:
           VERSION=${{ needs.release.outputs.version }}
     
     - name: Update package visibility
+      env:
+        REPOSITORY: ${{ github.repository }}
       run: |
         # Make the package public (requires manual confirmation in GitHub UI)
-        echo "Package created at: https://github.com/${{ github.repository }}/pkgs/container/spaceapi-endpoint"
+        echo "Package created at: https://github.com/$REPOSITORY/pkgs/container/spaceapi-endpoint"
         echo "To make it public:"
         echo "1. Go to the package page"
         echo "2. Click 'Package settings'"

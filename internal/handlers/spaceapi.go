@@ -69,8 +69,8 @@ func (h *SpaceAPIHandler) UpdateState(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error encoding State response: %v", err)
 	}
 
-	var ip_address string = r.RemoteAddr
-	log.Printf("%s State updated: %+v from %s", time.Unix(h.spaceAPI.State.Lastchange, 0).Format(time.RFC3339), h.spaceAPI.State, ip_address)
+	ipAddress := r.RemoteAddr
+	log.Printf("%s State updated: %+v from %s", time.Unix(h.spaceAPI.State.Lastchange, 0).Format(time.RFC3339), h.spaceAPI.State, ipAddress)
 }
 
 func (h *SpaceAPIHandler) UpdatePeopleCount(w http.ResponseWriter, r *http.Request) {
