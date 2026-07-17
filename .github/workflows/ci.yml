@@ -190,6 +190,10 @@ jobs:
           type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
     
+    - name: Determine build date
+      id: build_date
+      run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
     - name: Build Docker image
       uses: docker/build-push-action@v5
       with:
@@ -201,6 +205,9 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
+        build-args: |
+          COMMIT=${{ github.sha }}
+          DATE=${{ steps.build_date.outputs.date }}
 
   e2e-test:
     name: End-to-End API Tests
